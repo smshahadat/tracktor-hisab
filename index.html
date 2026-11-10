@@ -76,7 +76,16 @@ button:focus-visible,.btn:focus-visible{outline:2px solid #24945f;outline-offset
 #landingPage .landing-footer{margin-top:24px;color:#718078;font-size:11px;text-align:center}
 @media(min-width:600px){#landingPage{justify-content:center;padding-top:42px}#landingPage .landing-grid{gap:16px}#landingPage .landing-tile{min-height:145px;font-size:17px}}
 </style>
+</style>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<style>
+#loginGate{position:fixed;inset:0;z-index:1000;background:#f3f6f4;display:flex;align-items:center;justify-content:center;padding:18px}
+#loginGate.hidden{display:none!important}.login-card{background:#fff;width:100%;max-width:390px;padding:22px;border:1px solid #d8e1dc;border-radius:16px;box-shadow:0 8px 30px #102f2218}
+.login-card h2{margin:0 0 8px;color:#176b45}.login-card label{display:block;font-size:13px;color:#64746b;margin:12px 0 5px}.login-card button{width:100%;margin-top:14px}.login-card input{width:100%;padding:11px;border:1px solid #cbd7cf;border-radius:8px;font:inherit}.login-note{font-size:12px;color:#64746b;line-height:1.6}.login-error{font-size:13px;color:#b42318;margin-top:10px;line-height:1.5}
 </style></head><body>
+<div id="loginGate"><div class="login-card"><h2>দুই ভাই এন্টারপ্রাইজ</h2><p class="muted">আপনার Gmail ও পাসওয়ার্ড দিয়ে প্রবেশ করুন</p><form id="loginForm"><label for="loginEmail">Gmail / ইমেইল</label><input id="loginEmail" type="email" autocomplete="username" required placeholder="আপনার ইমেইল"><label for="loginPassword">পাসওয়ার্ড</label><input id="loginPassword" type="password" autocomplete="current-password" required placeholder="পাসওয়ার্ড"><button class="primary" type="submit">লগইন</button><div id="loginError" class="login-error" role="alert"></div></form><p class="login-note">লগইনের জন্য Firebase Authentication-এ আগে থেকে তৈরি করা অ্যাকাউন্ট ব্যবহার করুন।</p></div></div>
 
 <div id="appToast" role="status" aria-live="polite"></div>
 
@@ -97,7 +106,7 @@ button:focus-visible,.btn:focus-visible{outline:2px solid #24945f;outline-offset
   <div class="landing-footer">দুই ভাই এন্টারপ্রাইজ</div>
 </section>
 
-<div id="cloudStatus" class="cloudbar hidden" style="margin:10px 12px">অফলাইন প্রিভিউ মোড — Firebase লগইন লাগবে না। এখানে করা পরিবর্তন শুধু এই ফোনের ব্রাউজারে থাকবে।</div>
+<div id="cloudStatus" class="cloudbar hidden" style="margin:10px 12px">Firebase-এর সঙ্গে সংযোগ করা হচ্ছে… <button type="button" class="mini" onclick="window.logoutFirebase&&window.logoutFirebase()">লগআউট</button></div>
 <header id="appHeader" class="hidden"><div class="header-brand"><h1>দুই ভাই এন্টারপ্রাইজ</h1><div class="brand-sub">প্রোঃ মোঃ ছামছুল আলম</div></div><button class="header-menu" type="button" aria-label="মেনু খুলুন" onclick="openMenu()"><span></span><span></span><span></span></button></header>
 <div class="season-hero hidden"><div class="muted">বর্তমান সিজন</div><div class="season-name" id="homeSeasonName">আমন</div><div class="season-date" id="homeSeasonDate"></div></div>
 <div class="drawer-back hidden" id="drawerBack" onclick="if(event.target===this)closeMenu()"><aside class="drawer"><div class="drawer-head"><span>দুই ভাই এন্টারপ্রাইজ</span><button class="drawer-close" onclick="closeMenu()" aria-label="মেনু বন্ধ">×</button></div>
@@ -160,7 +169,7 @@ try{
  appState.activeSeasonId=activeSeason.id;activeSeason.data=normalizeDb(activeSeason.data);db=activeSeason.data;
 }catch(err){alert('সংরক্ষিত ডাটা পড়তে সমস্যা হয়েছে। ডাটা মুছে ফেলা হয়নি; ব্যাকআপ ফাইল দিয়ে ফিরিয়ে আনুন।');let id='season-'+Date.now();appState={activeSeasonId:id,seasons:[{id,name:'আমন',startDate:new Date().toISOString().slice(0,10),status:'active',data:blankDb()}]};activeSeason=appState.seasons[0];db=activeSeason.data}
 function persistState(){activeSeason.data=db;localStorage.setItem(STORE_KEY,JSON.stringify(appState));localStorage.setItem('tractor_hisab',JSON.stringify(db))}
-function save(){persistState();render();if(window.cloudReady&&window.cloudDoc){window.cloudDoc.set({payload:db,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).catch(e=>{console.error(e);$('cloudStatus').textContent='ক্লাউডে সংরক্ষণ হয়নি: '+(e.message||'অনুমতি পরীক্ষা করুন')})}}
+function save(){persistState();render();if(window.cloudReady&&window.cloudDoc){window.cloudDoc.set({payload:appState,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}).catch(e=>{console.error(e);$('cloudStatus').textContent='ক্লাউডে সংরক্ষণ হয়নি: '+(e.message||'অনুমতি পরীক্ষা করুন')})}}
 $('copyNames').addEventListener('change',()=>{$('copyLands').disabled=!$('copyNames').checked;if(!$('copyNames').checked)$('copyLands').checked=false});
 function renderSeasonHeader(){
  $('homeSeasonName').textContent=activeSeason.name||'নামহীন সিজন';
@@ -368,8 +377,57 @@ window.addEventListener('beforeunload',e=>{
 });
 render();$('copyLands').disabled=!$('copyNames').checked;
 
-// অফলাইন প্রিভিউ: Firebase/Auth ইচ্ছাকৃতভাবে বন্ধ রাখা হয়েছে।
+// Firebase Authentication + Cloud Firestore automatic sync
 window.cloudReady=false;window.cloudDoc=null;
+const firebaseConfig={
+ apiKey:'AIzaSyBYgrhYMhZHzuRhQ3pIAP4m8FS2ujKb1x0',
+ authDomain:'tractor-hisab-a0a60.firebaseapp.com',
+ databaseURL:'https://tractor-hisab-a0a60-default-rtdb.asia-southeast1.firebasedatabase.app',
+ projectId:'tractor-hisab-a0a60',
+ storageBucket:'tractor-hisab-a0a60.firebasestorage.app',
+ messagingSenderId:'812925883438',
+ appId:'1:812925883438:web:09d0c9aadd73f5261cfbbf',
+ measurementId:'G-7YCY0HVV3M'
+};
+let cloudUnsubscribe=null;
+try{
+ firebase.initializeApp(firebaseConfig);
+ const auth=firebase.auth();
+ const firestore=firebase.firestore();
+ window.cloudDoc=firestore.collection('sharedData').doc('main');
+ document.getElementById('loginForm').addEventListener('submit',async e=>{
+  e.preventDefault();const btn=e.currentTarget.querySelector('button[type=submit]');const err=$('loginError');
+  if(btn.disabled)return;btn.disabled=true;btn.textContent='যাচাই হচ্ছে…';err.textContent='Firebase সার্ভারে সংযোগ করা হচ্ছে…';
+  try{if(!navigator.onLine)throw new Error('ইন্টারনেট সংযোগ নেই।');await auth.signInWithEmailAndPassword($('loginEmail').value.trim(),$('loginPassword').value);err.textContent='লগইন সফল। অ্যাপ খুলছে…';}
+  catch(ex){const m={'auth/invalid-credential':'ইমেইল বা পাসওয়ার্ড সঠিক নয়।','auth/user-not-found':'এই ইমেইলে অ্যাকাউন্ট পাওয়া যায়নি।','auth/wrong-password':'পাসওয়ার্ড সঠিক নয়।','auth/too-many-requests':'অনেকবার চেষ্টা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।','auth/network-request-failed':'ইন্টারনেট সংযোগ পরীক্ষা করুন।','auth/unauthorized-domain':'Firebase Authentication-এর Authorized domains-এ GitHub Pages ডোমেইন যোগ করতে হবে।'};err.textContent=m[ex.code]||('লগইন হয়নি: '+(ex.message||'আবার চেষ্টা করুন।'));}
+  finally{btn.disabled=false;btn.textContent='লগইন';}
+ });
+ window.logoutFirebase=()=>auth.signOut();
+ auth.onAuthStateChanged(async user=>{
+  if(cloudUnsubscribe){cloudUnsubscribe();cloudUnsubscribe=null;}window.cloudReady=false;
+  if(!user){$('loginGate').classList.remove('hidden');$('cloudStatus').classList.add('hidden');return;}
+  $('loginGate').classList.add('hidden');$('cloudStatus').classList.remove('hidden');$('cloudStatus').textContent='ক্লাউডের হিসাব লোড হচ্ছে…';
+  try{
+   const snap=await window.cloudDoc.get();
+   if(snap.exists&&snap.data().payload){
+    const remote=snap.data().payload;
+    if(Array.isArray(remote.seasons)&&remote.seasons.length){appState=remote;activeSeason=appState.seasons.find(x=>x.id===appState.activeSeasonId)||appState.seasons[0];appState.activeSeasonId=activeSeason.id;activeSeason.data=normalizeDb(activeSeason.data);db=activeSeason.data;}
+    else{const remoteDb=normalizeDb(remote);const sid='season-cloud-main';activeSeason={id:sid,name:'আমন',startDate:new Date().toISOString().slice(0,10),status:'active',data:remoteDb};appState={activeSeasonId:sid,seasons:[activeSeason]};db=activeSeason.data;}
+    persistState();render();
+   }else{
+    persistState();await window.cloudDoc.set({payload:appState,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+   }
+   window.cloudReady=true;$('cloudStatus').innerHTML='☁️ ক্লাউড সিঙ্ক চালু — <button type="button" class="mini" onclick="window.logoutFirebase&&window.logoutFirebase()">লগআউট</button>';
+   cloudUnsubscribe=window.cloudDoc.onSnapshot(doc=>{
+    if(!doc.exists||!doc.data().payload)return;const remote=doc.data().payload;
+    if(Array.isArray(remote.seasons)&&remote.seasons.length){appState=remote;activeSeason=appState.seasons.find(x=>x.id===appState.activeSeasonId)||appState.seasons[0];appState.activeSeasonId=activeSeason.id;activeSeason.data=normalizeDb(activeSeason.data);db=activeSeason.data;}
+    else{const sid='season-cloud-main';activeSeason={id:sid,name:'আমন',startDate:new Date().toISOString().slice(0,10),status:'active',data:normalizeDb(remote)};appState={activeSeasonId:sid,seasons:[activeSeason]};db=activeSeason.data;}
+    persistState();render();$('cloudStatus').innerHTML='☁️ সব ডিভাইসের সঙ্গে সিঙ্ক চালু — <button type="button" class="mini" onclick="window.logoutFirebase&&window.logoutFirebase()">লগআউট</button>';
+   },err=>{$('cloudStatus').textContent='লাইভ সিঙ্কে সমস্যা: '+err.message;});
+  }catch(ex){console.error(ex);$('cloudStatus').textContent='Firestore সংযোগ হয়নি: '+(ex.message||'Rules পরীক্ষা করুন');}
+ });
+}catch(ex){console.error(ex);$('loginError').textContent='Firebase চালু হয়নি: '+ex.message;$('loginGate').classList.remove('hidden');}
+
 </script>
 <div class="modalback" id="closeCustomerModal" style="z-index:40;align-items:center">
   <div class="modal" style="max-width:360px;border-radius:14px">
