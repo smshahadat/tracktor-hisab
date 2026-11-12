@@ -206,7 +206,7 @@ function toggleRunningSeasons(){
 function switchSeason(id){
  const season=appState.seasons.find(x=>x.id===id);if(!season)return;
  appState.activeSeasonId=id;activeSeason=season;db=normalizeDb(season.data);season.data=db;
- persistState();renderSeasonHeader();render();closeMenu();
+ save();closeMenu();
 }
 function editCurrentSeason(){
  seasonEditId=activeSeason.id;$('seasonModalTitle').textContent='সিজন সম্পাদনা';$('seasonSaveBtn').textContent='পরিবর্তন সংরক্ষণ';
@@ -216,7 +216,7 @@ function editCurrentSeason(){
 function saveSeason(){
  const name=$('seasonNameInput').value.trim(),date=$('seasonDateInput').value;
  if(!name)return alert('সিজনের নাম লিখুন');
- if(seasonEditId){let s=appState.seasons.find(x=>x.id===seasonEditId);if(!s)return; s.name=name;s.startDate=date;renderSeasonHeader();persistState();closeM('seasonModal');return alert('সিজনের নাম ও তারিখ সংরক্ষণ হয়েছে');}
+ if(seasonEditId){let s=appState.seasons.find(x=>x.id===seasonEditId);if(!s)return; s.name=name;s.startDate=date;save();closeM('seasonModal');return alert('সিজনের নাম ও তারিখ সংরক্ষণ হয়েছে');}
  const copyNames=$('copyNames').checked,copyLands=$('copyLands').checked;
  const prev=activeSeason.data, fresh=blankDb();
  fresh.rate=Number(prev.rate)||16;
@@ -226,7 +226,7 @@ function saveSeason(){
  const id='season-'+Date.now()+'-'+Math.random().toString(36).slice(2,7);
  const season={id,name,startDate:date,status:'active',data:fresh};
  appState.seasons.forEach(s=>{s.status='archived'});appState.seasons.push(season);appState.activeSeasonId=id;
- activeSeason=season;db=activeSeason.data;persistState();renderSeasonHeader();render();closeM('seasonModal');closeMenu();
+ activeSeason=season;db=activeSeason.data;save();closeM('seasonModal');closeMenu();
  alert('নতুন সিজন তৈরি হয়েছে। আগের সিজনের আয়, দাম, জমা, বাকি ও হালখাতার হিসাব কপি হয়নি।');
 }
 function showSeasonPicker(){ $('seasonOptions').classList.remove('hidden');$('seasonArrow').textContent='⌃';$('seasonArrow').setAttribute('aria-expanded','true');$('runningSeasons').classList.remove('hidden');$('runningSeasonArrow').textContent='⌃'; }
