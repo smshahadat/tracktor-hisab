@@ -465,8 +465,8 @@ function hkCardLand(c){
 }
 function getHalkhataCardCustomers(){
  const village=$('hkCardVillage')?.value||'';
- return [...db.customers].filter(c=>!village||(c.village||'').trim()===village)
-  .sort((a,b)=>((a.village||'').trim()).localeCompare((b.village||'').trim(),'bn')||String(a.name||'').localeCompare(String(b.name||''),'bn'));
+ // Keep the same order as the main customer list; do not sort alphabetically.
+ return db.customers.filter(c=>!village||(c.village||'').trim()===village);
 }
 function updateHalkhataCardCount(){const a=getHalkhataCardCustomers();$('hkCardCount').textContent=`${fmt(a.length)} জন গ্রাহক • ${fmt(Math.ceil(a.length/4))} পৃষ্ঠা • কোনো গ্রাহকের তথ্য পরিবর্তন হবে না।`;}
 function printHalkhataCards(){
@@ -475,7 +475,7 @@ function printHalkhataCards(){
  const cards=customers.map(c=>{
   const totalLand=cult(c),deposit=dep(c),old=oldAmount(c),totalMoney=price(c);
   const totalDue=Math.max(0,totalMoney-deposit);
-  return `<div class="hk-card-slot"><article class="hk-print-card${deposit>0?' has-deposit':''}"><div class="hk-card-heading"><h2 class="hk-print-name">${safe(c.name||'নাম নেই')}</h2><div class="hk-card-village">গ্রাম: ${safe((c.village||'').trim()||'উল্লেখ নেই')}</div></div><div class="hk-print-land"><div class="hk-land-title">জমি</div>${hkCardLand(c)}</div><hr class="hk-print-rule"><div class="hk-money-row"><span>মোট জমি:</span><strong>${fmt(totalLand)} শতক</strong></div><div class="hk-money-row"><span>মোট টাকা:</span><strong>${fmt(totalMoney)} টাকা</strong></div>${deposit>0?`<div class="hk-money-row"><span>জমা:</span><strong>${fmt(deposit)} টাকা</strong></div>`:''}${old>0?`<div class="hk-money-row"><span>পুরানা:</span><strong>${fmt(old)} টাকা</strong></div>`:''}<hr class="hk-print-rule hk-total-rule"><div class="hk-total-due"><span>মোট বাকি:</span><strong>${fmt(totalDue)} টাকা</strong></div></article></div>`;
+  return `<div class="hk-card-slot"><article class="hk-print-card${deposit>0?' has-deposit':''}"><div class="hk-card-heading"><h2 class="hk-print-name">${safe(c.name||'নাম নেই')}</h2><div class="hk-card-village">গ্রাম: ${safe((c.village||'').trim()||'উল্লেখ নেই')}</div></div><div class="hk-print-land"><div class="hk-land-title">জমি</div>${hkCardLand(c)}</div><hr class="hk-print-rule"><div class="hk-money-row"><span>মোট জমি:</span><strong>${fmt(totalLand)} শতক</strong></div><div class="hk-money-row"><span>মোট টাকা:</span><strong>${fmt(totalMoney)} টাকা</strong></div>${deposit>0?`<div class="hk-money-row"><span>জমা:</span><strong>${fmt(deposit)} টাকা</strong></div>`:''}${old>0?`<div class="hk-money-row"><span style="color:red">পুরানা:</span><strong>${fmt(old)} টাকা</strong></div>`:''}<hr class="hk-print-rule hk-total-rule"><div class="hk-total-due"><span>মোট বাকি:</span><strong>${fmt(totalDue)} টাকা</strong></div></article></div>`;
  });
  const pages=[];for(let i=0;i<cards.length;i+=4)pages.push(`<section class="hk-card-page">${cards.slice(i,i+4).join('')}</section>`);
  const w=window.open('','_blank');if(!w){alert('প্রিন্ট উইন্ডো খুলতে অনুমতি দিন (Pop-ups allow করুন)।');return;}
